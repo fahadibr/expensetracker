@@ -98,7 +98,7 @@ export default function DashboardPage() {
               <span className="text-xl">{card.icon}</span>
             </div>
             <p className={`text-2xl font-bold ${card.value < 0 ? 'text-danger' : 'text-surface-900'}`}>
-              Rs {formatCurrency(Math.abs(card.value))}
+              {card.value < 0 ? '-' : ''}Rs {formatCurrency(Math.abs(card.value))}
             </p>
           </div>
         ))}
