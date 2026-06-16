@@ -16,6 +16,9 @@ const reportRoutes = require('./routes/reports');
 
 const app = express();
 
+// Trust proxy (required for Render/Nginx reverse proxy)
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 app.use(cors({
