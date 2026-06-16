@@ -60,7 +60,15 @@ async function register(req, res) {
     });
 
     // Send verification email (non-blocking)
-    sendVerificationEmail(email.toLowerCase(), verifyToken).catch(err => console.error('Email send failed:', err.message));
+    // If email fails (e.g. Render blocks SMTP), auto-verify the account
+    sendVerificationEmail(email.toLowerCase(), verifyToken).catch(async (err) => {
+      console.error('Email send failed:', err.message);
+      console.log('⚡ Auto-verifying account since email could not be sent');
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: true, verifyToken: null, verifyTokenExp: null },
+      });
+    });
 
     res.status(201).json({
       message: 'Registration successful. Please check your email to verify your account.',
