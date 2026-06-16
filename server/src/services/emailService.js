@@ -11,21 +11,33 @@ function getTransporter() {
   if (transporter) return transporter;
 
   if (config.email.user && config.email.pass) {
-    // Real SMTP transport
-    transporter = nodemailer.createTransport({
-      host: config.email.host,
-      port: config.email.port,
-      secure: config.email.port === 465,
-      auth: {
-        user: config.email.user,
-        pass: config.email.pass,
-      },
-    });
+    // Real SMTP transport — use 'service' shorthand for Gmail
+    const isGmail = config.email.host?.includes('gmail');
+    const transportConfig = isGmail
+      ? {
+          service: 'gmail',
+          auth: {
+            user: config.email.user,
+            pass: config.email.pass,
+          },
+        }
+      : {
+          host: config.email.host,
+          port: config.email.port,
+          secure: config.email.port === 465,
+          auth: {
+            user: config.email.user,
+            pass: config.email.pass,
+          },
+        };
+    transporter = nodemailer.createTransport(transportConfig);
+    console.log(`📧 Email transport: ${isGmail ? 'Gmail' : config.email.host}`);
   } else {
     // Dev mode: use JSON transport (logs to console)
     transporter = nodemailer.createTransport({
       jsonTransport: true,
     });
+    console.log('📧 Email transport: Console (dev mode)');
   }
 
   return transporter;
@@ -43,19 +55,26 @@ async function sendEmail({ to, subject, html }) {
     html,
   };
 
-  const info = await transport.sendMail(mailOptions);
+  try {
+    const info = await transport.sendMail(mailOptions);
+    console.log(`✅ Email sent to ${to} — ${subject}`);
 
-  if (!config.email.user) {
-    // Dev mode: log the email
-    console.log('\n📧 ══════════════════════════════════════════');
-    console.log(`  To: ${to}`);
-    console.log(`  Subject: ${subject}`);
-    const parsed = JSON.parse(info.message);
-    console.log(`  HTML: ${parsed.html?.substring(0, 200)}...`);
-    console.log('══════════════════════════════════════════════\n');
+    if (!config.email.user) {
+      // Dev mode: log the email
+      console.log('\n📧 ══════════════════════════════════════════');
+      console.log(`  To: ${to}`);
+      console.log(`  Subject: ${subject}`);
+      const parsed = JSON.parse(info.message);
+      console.log(`  HTML: ${parsed.html?.substring(0, 200)}...`);
+      console.log('══════════════════════════════════════════════\n');
+    }
+
+    return info;
+  } catch (error) {
+    console.error(`❌ Failed to send email to ${to}:`, error.message);
+    console.error('   SMTP Config:', { host: config.email.host, port: config.email.port, user: config.email.user ? '***set***' : 'NOT SET' });
+    throw error;
   }
-
-  return info;
 }
 
 /**
