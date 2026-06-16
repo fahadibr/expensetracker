@@ -27,5 +27,5 @@ COPY --from=client-build /app/client/dist ./client/dist/
 # Expose port (Render sets PORT env var automatically)
 EXPOSE 3000
 
-# Start: run migrations then start server
-CMD ["sh", "-c", "cd server && npx prisma migrate deploy && node src/index.js"]
+# Start server (migrations are run locally via DIRECT_URL before deploy)
+CMD ["sh", "-c", "cd server && npx prisma migrate deploy || echo 'Migration skipped' && node src/index.js"]
