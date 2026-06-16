@@ -1,0 +1,22 @@
+node_modules
+npm-debug.log
+.env
+.env.local
+.git
+.gitignore
+*.md
+docker-compose.yml
+nginx/
+
+# Client build artifacts (we rebuild in Docker)
+client/node_modules
+client/dist
+
+# Server build artifacts
+server/node_modules
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
