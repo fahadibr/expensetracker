@@ -59,8 +59,8 @@ async function register(req, res) {
       ],
     });
 
-    // Send verification email
-    await sendVerificationEmail(email.toLowerCase(), verifyToken);
+    // Send verification email (non-blocking)
+    sendVerificationEmail(email.toLowerCase(), verifyToken).catch(err => console.error('Email send failed:', err.message));
 
     res.status(201).json({
       message: 'Registration successful. Please check your email to verify your account.',
@@ -206,7 +206,7 @@ async function forgotPassword(req, res) {
       data: { resetToken, resetTokenExp },
     });
 
-    await sendPasswordResetEmail(email.toLowerCase(), resetToken);
+    sendPasswordResetEmail(email.toLowerCase(), resetToken).catch(err => console.error('Email send failed:', err.message));
 
     res.json({ message: 'If an account exists with this email, a reset link has been sent.' });
   } catch (error) {
@@ -274,7 +274,7 @@ async function resendVerification(req, res) {
       data: { verifyToken, verifyTokenExp },
     });
 
-    await sendVerificationEmail(email.toLowerCase(), verifyToken);
+    sendVerificationEmail(email.toLowerCase(), verifyToken).catch(err => console.error('Email send failed:', err.message));
 
     res.json({ message: 'If the account exists and is unverified, a new verification email has been sent.' });
   } catch (error) {

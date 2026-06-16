@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/client';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
@@ -8,6 +9,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resending, setResending] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -22,10 +25,23 @@ export default function LoginPage() {
       const msg = err.response?.data?.error || 'Login failed';
       toast.error(msg);
       if (err.response?.data?.needsVerification) {
-        toast('Check your email to verify your account', { icon: '📧' });
+        setNeedsVerification(true);
       }
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    if (!email) return toast.error('Enter your email first');
+    setResending(true);
+    try {
+      await api.post('/auth/resend-verification', { email });
+      toast.success('Verification email sent! Check your inbox.');
+    } catch {
+      toast.error('Failed to resend. Try again.');
+    } finally {
+      setResending(false);
     }
   }
 
@@ -70,6 +86,27 @@ export default function LoginPage() {
             <h2 className="text-2xl font-bold text-surface-900">Welcome back</h2>
             <p className="text-surface-400 mt-1">Sign in to your account</p>
           </div>
+
+          {needsVerification && (
+            <div className="mb-5 p-4 rounded-xl bg-warning-light border border-warning/20 animate-slide-down">
+              <div className="flex items-start gap-3">
+                <span className="text-xl">📧</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-surface-800">Email not verified</p>
+                  <p className="text-xs text-surface-500 mt-0.5">Check your inbox or click below to resend.</p>
+                </div>
+              </div>
+              <button
+                onClick={handleResend}
+                disabled={resending}
+                className="mt-3 w-full py-2 px-4 rounded-lg bg-warning/10 border border-warning/20
+                           text-sm font-medium text-warning hover:bg-warning/20
+                           disabled:opacity-50 transition-all cursor-pointer"
+              >
+                {resending ? 'Sending...' : 'Resend Verification Email'}
+              </button>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
