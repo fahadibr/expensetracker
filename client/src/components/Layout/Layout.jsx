@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
   { path: '/transactions', label: 'Transactions', icon: TransactionIcon },
+  { path: '/categories', label: 'Categories', icon: CategoryIcon },
   { path: '/reports', label: 'Reports', icon: ReportIcon },
 ];
 
@@ -155,6 +156,14 @@ function LogoutIcon() {
   return (
     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+    </svg>
+  );
+}
+
+function CategoryIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
     </svg>
   );
 }

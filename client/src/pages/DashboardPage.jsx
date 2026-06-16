@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import api from '../api/client';
-import { formatCurrency, formatDate, getTypeStyles } from '../utils/helpers';
+import { formatCurrency, formatDate, getTypeStyles, CATEGORY_COLORS } from '../utils/helpers';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, Filler);
 
@@ -73,11 +73,12 @@ export default function DashboardPage() {
 
   // Doughnut data
   const catExpenses = summary.categoryExpenses || {};
+  const catKeys = Object.keys(catExpenses);
   const doughnutData = {
-    labels: Object.keys(catExpenses),
+    labels: catKeys,
     datasets: [{
       data: Object.values(catExpenses),
-      backgroundColor: ['#8b5cf6', '#ec4899', '#f97316'],
+      backgroundColor: catKeys.map((_, i) => CATEGORY_COLORS[i % CATEGORY_COLORS.length].hex),
       borderWidth: 0,
       hoverOffset: 8,
     }],

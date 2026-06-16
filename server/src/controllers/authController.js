@@ -50,15 +50,6 @@ async function register(req, res) {
       ],
     });
 
-    // Create default categories
-    await prisma.category.createMany({
-      data: [
-        { userId: user.id, name: 'Fahad' },
-        { userId: user.id, name: 'Mrs' },
-        { userId: user.id, name: 'Home' },
-      ],
-    });
-
     // Send verification email (non-blocking)
     // If email fails (e.g. Render blocks SMTP), auto-verify the account
     sendVerificationEmail(email.toLowerCase(), verifyToken).catch(async (err) => {

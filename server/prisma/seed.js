@@ -49,39 +49,39 @@ async function main() {
 
   console.log('  ✓ Created accounts: Bank, Cash');
 
-  // Create categories
-  const fahadCat = await prisma.category.upsert({
-    where: { userId_name: { userId: user.id, name: 'Fahad' } },
+  // Create categories (generic demo categories)
+  const personalCat = await prisma.category.upsert({
+    where: { userId_name: { userId: user.id, name: 'Personal' } },
     update: {},
-    create: { userId: user.id, name: 'Fahad' },
+    create: { userId: user.id, name: 'Personal' },
   });
 
-  const mrsCat = await prisma.category.upsert({
-    where: { userId_name: { userId: user.id, name: 'Mrs' } },
+  const householdCat = await prisma.category.upsert({
+    where: { userId_name: { userId: user.id, name: 'Household' } },
     update: {},
-    create: { userId: user.id, name: 'Mrs' },
+    create: { userId: user.id, name: 'Household' },
   });
 
-  const homeCat = await prisma.category.upsert({
-    where: { userId_name: { userId: user.id, name: 'Home' } },
+  const transportCat = await prisma.category.upsert({
+    where: { userId_name: { userId: user.id, name: 'Transport' } },
     update: {},
-    create: { userId: user.id, name: 'Home' },
+    create: { userId: user.id, name: 'Transport' },
   });
 
-  console.log('  ✓ Created categories: Fahad, Mrs, Home');
+  console.log('  ✓ Created categories: Personal, Household, Transport');
 
   // Create sample transactions
   const sampleTransactions = [
     { accountId: bankAccount.id, categoryId: null, transactionType: 'income', amount: 75000, description: 'Monthly Salary', transactionDate: new Date('2026-06-01') },
-    { accountId: cashAccount.id, categoryId: fahadCat.id, transactionType: 'expense', amount: 1500, description: 'Fuel', transactionDate: new Date('2026-06-02') },
-    { accountId: cashAccount.id, categoryId: fahadCat.id, transactionType: 'expense', amount: 500, description: 'Mobile Recharge', transactionDate: new Date('2026-06-03') },
-    { accountId: bankAccount.id, categoryId: homeCat.id, transactionType: 'expense', amount: 8000, description: 'Grocery', transactionDate: new Date('2026-06-05') },
-    { accountId: bankAccount.id, categoryId: homeCat.id, transactionType: 'expense', amount: 3500, description: 'Electricity Bill', transactionDate: new Date('2026-06-07') },
-    { accountId: cashAccount.id, categoryId: mrsCat.id, transactionType: 'expense', amount: 2500, description: 'Shopping', transactionDate: new Date('2026-06-08') },
-    { accountId: bankAccount.id, categoryId: homeCat.id, transactionType: 'expense', amount: 2000, description: 'Gas Bill', transactionDate: new Date('2026-06-10') },
-    { accountId: cashAccount.id, categoryId: fahadCat.id, transactionType: 'expense', amount: 800, description: 'Food', transactionDate: new Date('2026-06-12') },
-    { accountId: bankAccount.id, categoryId: mrsCat.id, transactionType: 'expense', amount: 4000, description: 'Clothing', transactionDate: new Date('2026-06-14') },
-    { accountId: bankAccount.id, categoryId: fahadCat.id, transactionType: 'expense', amount: 2500, description: 'Internet Bill', transactionDate: new Date('2026-06-15') },
+    { accountId: cashAccount.id, categoryId: transportCat.id, transactionType: 'expense', amount: 1500, description: 'Fuel', transactionDate: new Date('2026-06-02') },
+    { accountId: cashAccount.id, categoryId: personalCat.id, transactionType: 'expense', amount: 500, description: 'Mobile Recharge', transactionDate: new Date('2026-06-03') },
+    { accountId: bankAccount.id, categoryId: householdCat.id, transactionType: 'expense', amount: 8000, description: 'Grocery', transactionDate: new Date('2026-06-05') },
+    { accountId: bankAccount.id, categoryId: householdCat.id, transactionType: 'expense', amount: 3500, description: 'Electricity Bill', transactionDate: new Date('2026-06-07') },
+    { accountId: cashAccount.id, categoryId: personalCat.id, transactionType: 'expense', amount: 2500, description: 'Shopping', transactionDate: new Date('2026-06-08') },
+    { accountId: bankAccount.id, categoryId: householdCat.id, transactionType: 'expense', amount: 2000, description: 'Gas Bill', transactionDate: new Date('2026-06-10') },
+    { accountId: cashAccount.id, categoryId: personalCat.id, transactionType: 'expense', amount: 800, description: 'Food', transactionDate: new Date('2026-06-12') },
+    { accountId: bankAccount.id, categoryId: personalCat.id, transactionType: 'expense', amount: 4000, description: 'Clothing', transactionDate: new Date('2026-06-14') },
+    { accountId: bankAccount.id, categoryId: transportCat.id, transactionType: 'expense', amount: 2500, description: 'Internet Bill', transactionDate: new Date('2026-06-15') },
   ];
 
   for (const txn of sampleTransactions) {

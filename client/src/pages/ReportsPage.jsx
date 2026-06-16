@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import api from '../api/client';
-import { formatCurrency } from '../utils/helpers';
+import { formatCurrency, CATEGORY_COLORS } from '../utils/helpers';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
@@ -34,7 +34,13 @@ export default function ReportsPage() {
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-  const catColors = { Fahad: '#8b5cf6', Mrs: '#ec4899', Home: '#f97316' };
+  // Build dynamic color map from category data
+  const catColors = {};
+  if (category) {
+    category.categories.forEach((c, i) => {
+      catColors[c.categoryName] = CATEGORY_COLORS[i % CATEGORY_COLORS.length].hex;
+    });
+  }
 
   const doughnutData = category ? {
     labels: category.categories.map(c => c.categoryName),
