@@ -18,4 +18,7 @@ router.get('/account', reportController.getAccountReport);
 // Monthly trend (for charts)
 router.get('/trend', reportController.getMonthlyTrend);
 
+// Monthly detail (all transactions for a month)
+router.get('/monthly-detail', reportController.getMonthlyDetail);
+
 module.exports = router;

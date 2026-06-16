@@ -195,9 +195,43 @@ async function getMonthlyTrend(req, res) {
   }
 }
 
+/**
+ * Monthly detail: all transactions for a given month.
+ */
+async function getMonthlyDetail(req, res) {
+  try {
+    const userId = req.user.id;
+    const { year, month } = req.query;
+
+    const y = parseInt(year) || new Date().getFullYear();
+    const m = parseInt(month) || new Date().getMonth() + 1;
+
+    const startDate = new Date(y, m - 1, 1);
+    const endDate = new Date(y, m, 0);
+
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        userId,
+        transactionDate: { gte: startDate, lte: endDate },
+      },
+      include: {
+        account: { select: { id: true, name: true, type: true } },
+        category: { select: { id: true, name: true } },
+      },
+      orderBy: { transactionDate: 'desc' },
+    });
+
+    res.json({ transactions });
+  } catch (error) {
+    console.error('Monthly detail error:', error);
+    res.status(500).json({ error: 'Failed to fetch monthly details' });
+  }
+}
+
 module.exports = {
   getMonthlyReport,
   getCategoryReport,
   getAccountReport,
   getMonthlyTrend,
+  getMonthlyDetail,
 };

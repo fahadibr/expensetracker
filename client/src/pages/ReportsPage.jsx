@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import api from '../api/client';
-import { formatCurrency, CATEGORY_COLORS } from '../utils/helpers';
+import { formatCurrency, formatDate, getTypeStyles, CATEGORY_COLORS } from '../utils/helpers';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
@@ -13,6 +13,7 @@ export default function ReportsPage() {
   const [monthly, setMonthly] = useState(null);
   const [category, setCategory] = useState(null);
   const [accountRpt, setAccountRpt] = useState(null);
+  const [monthlyTxns, setMonthlyTxns] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { fetchReports(); }, [year, month]);
@@ -20,14 +21,16 @@ export default function ReportsPage() {
   async function fetchReports() {
     setLoading(true);
     try {
-      const [m, c, a] = await Promise.all([
+      const [m, c, a, d] = await Promise.all([
         api.get('/reports/monthly', { params: { year, month } }),
         api.get('/reports/category', { params: { year, month } }),
         api.get('/reports/account'),
+        api.get('/reports/monthly-detail', { params: { year, month } }),
       ]);
       setMonthly(m.data.report);
       setCategory(c.data.report);
       setAccountRpt(a.data.report);
+      setMonthlyTxns(d.data.transactions);
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   }
@@ -60,6 +63,14 @@ export default function ReportsPage() {
       borderRadius: 8,
     }],
   } : null;
+
+  // Group transactions by date
+  const groupedTxns = {};
+  monthlyTxns.forEach(txn => {
+    const dateKey = formatDate(txn.transactionDate);
+    if (!groupedTxns[dateKey]) groupedTxns[dateKey] = [];
+    groupedTxns[dateKey].push(txn);
+  });
 
   if (loading) {
     return (
@@ -102,7 +113,7 @@ export default function ReportsPage() {
           <div className="bg-white rounded-2xl p-5 shadow-card border border-surface-100 hover-lift">
             <p className="text-sm text-surface-400 mb-1">Savings</p>
             <p className={`text-2xl font-bold ${monthly.savings >= 0 ? 'text-success' : 'text-danger'}`}>
-              Rs {formatCurrency(Math.abs(monthly.savings))}
+              {monthly.savings < 0 ? '-' : ''}Rs {formatCurrency(Math.abs(monthly.savings))}
             </p>
           </div>
         </div>
@@ -129,6 +140,60 @@ export default function ReportsPage() {
                 <Doughnut data={doughnutData} options={{ responsive: true, cutout: '65%', plugins: { legend: { position: 'bottom' } } }} />
               </div>
             ) : <p className="text-surface-400 text-center py-8">No expenses this month</p>}
+          </div>
+        )}
+      </div>
+
+      {/* Monthly Transaction Statement */}
+      <div className="bg-white rounded-2xl shadow-card border border-surface-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-surface-100 flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-surface-800">
+            📋 Monthly Statement — {months[month - 1]} {year}
+          </h3>
+          <span className="text-sm text-surface-400">{monthlyTxns.length} transactions</span>
+        </div>
+
+        {monthlyTxns.length === 0 ? (
+          <div className="p-12 text-center">
+            <p className="text-4xl mb-3">📭</p>
+            <p className="text-surface-500 font-medium">No transactions this month</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-surface-100">
+            {Object.entries(groupedTxns).map(([date, txns]) => (
+              <div key={date}>
+                <div className="px-6 py-2 bg-surface-50">
+                  <p className="text-xs font-semibold text-surface-400 uppercase tracking-wider">{date}</p>
+                </div>
+                <div className="divide-y divide-surface-50">
+                  {txns.map(txn => {
+                    const style = getTypeStyles(txn.transactionType);
+                    return (
+                      <div key={txn.id} className="flex items-center gap-4 px-6 py-3 hover:bg-surface-50/50 transition-colors">
+                        <div className={`w-9 h-9 rounded-xl ${style.bg} flex items-center justify-center text-base shrink-0`}>
+                          {style.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-surface-800 truncate">
+                            {txn.description || txn.category?.name || 'Transaction'}
+                          </p>
+                          <p className="text-xs text-surface-400">
+                            {txn.account?.name}
+                            {txn.category ? ` · ${txn.category.name}` : ''}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-sm font-semibold ${txn.transactionType === 'income' ? 'text-success' : txn.transactionType === 'transfer' ? 'text-info' : 'text-danger'}`}>
+                            {txn.transactionType === 'income' ? '+' : '-'}Rs {formatCurrency(txn.amount)}
+                          </p>
+                          <p className="text-[10px] text-surface-300 uppercase">{style.label}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
