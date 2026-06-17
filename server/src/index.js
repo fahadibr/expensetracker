@@ -22,7 +22,20 @@ app.set('trust proxy', 1);
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: config.clientUrl,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    const allowed = [
+      config.clientUrl,
+      'https://localhost',
+      'capacitor://localhost',
+      'http://localhost',
+    ].filter(Boolean);
+    if (allowed.includes(origin) || config.nodeEnv === 'development') {
+      return callback(null, true);
+    }
+    callback(null, true); // Allow all origins for mobile app compatibility
+  },
   credentials: true,
 }));
 
