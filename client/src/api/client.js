@@ -4,7 +4,7 @@ import axios from 'axios';
 // When running in browser, use relative /api path (proxied by nginx/vite)
 const isCapacitor = typeof window !== 'undefined' && window.Capacitor;
 const API_BASE = isCapacitor
-  ? 'https://expensetrack-kz55.onrender.com/api'
+  ? 'https://expensetracker-z0d0.onrender.com/api'
   : '/api';
 
 const api = axios.create({
