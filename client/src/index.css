@@ -177,3 +177,29 @@ body {
   transform: translateY(-2px);
   box-shadow: var(--shadow-card-hover);
 }
+
+/* Mobile App - Safe Areas & Native Feel */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Prevent rubber-band overscroll on mobile */
+html, body {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent text selection on interactive elements (native feel) */
+nav, button, .no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Smooth scrolling for mobile */
+main {
+  -webkit-overflow-scrolling: touch;
+}

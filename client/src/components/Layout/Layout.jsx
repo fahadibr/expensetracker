@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const navItems = [
@@ -12,12 +12,18 @@ const navItems = [
 export default function Layout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   async function handleLogout() {
     await logout();
     navigate('/login');
   }
+
+  // Get current page title
+  const currentPage = navItems.find(item => location.pathname.startsWith(item.path));
+  const pageTitle = currentPage?.label || 'ExpenseTrack';
 
   return (
     <div className="min-h-screen bg-surface-50 flex">
@@ -29,13 +35,13 @@ export default function Layout() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Desktop Sidebar - hidden on mobile */}
       <aside className={`
         fixed lg:sticky top-0 left-0 z-50 h-screen w-[260px]
         bg-white border-r border-surface-200 
-        flex flex-col
+        flex-col
         transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        hidden lg:flex
       `}>
         {/* Logo */}
         <div className="p-6 border-b border-surface-100">
@@ -56,7 +62,6 @@ export default function Layout() {
             <NavLink
               key={item.path}
               to={item.path}
-              onClick={() => setSidebarOpen(false)}
               className={({ isActive }) => `
                 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
                 transition-all duration-200
@@ -99,18 +104,56 @@ export default function Layout() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-h-screen">
-        {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-surface-100">
-          <div className="flex items-center justify-between px-4 lg:px-8 h-16">
+        {/* Mobile Top Bar */}
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-surface-100 safe-top">
+          <div className="flex items-center justify-between px-4 lg:px-8 h-14 lg:h-16">
+            {/* Mobile: Page title */}
+            <div className="flex items-center gap-3 lg:hidden">
+              <div className="w-8 h-8 rounded-lg gradient-primary flex items-center justify-center">
+                <span className="text-white font-bold text-sm">E</span>
+              </div>
+              <h1 className="text-lg font-bold text-surface-900">{pageTitle}</h1>
+            </div>
+            {/* Desktop: hamburger (hidden on desktop since sidebar is visible) */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-lg hover:bg-surface-100 text-surface-600 cursor-pointer"
+              className="lg:hidden hidden p-2 rounded-lg hover:bg-surface-100 text-surface-600 cursor-pointer"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <div className="flex items-center gap-4 ml-auto">
+            {/* Mobile: User avatar with dropdown */}
+            <div className="relative lg:hidden">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="w-9 h-9 rounded-full gradient-primary flex items-center justify-center cursor-pointer"
+              >
+                <span className="text-white text-sm font-semibold">
+                  {user?.name?.charAt(0)?.toUpperCase()}
+                </span>
+              </button>
+              {showUserMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
+                  <div className="absolute right-0 top-12 z-50 w-56 bg-white rounded-2xl shadow-xl border border-surface-100 p-2 animate-slide-down">
+                    <div className="px-3 py-2 border-b border-surface-100 mb-1">
+                      <p className="text-sm font-semibold text-surface-800 truncate">{user?.name}</p>
+                      <p className="text-xs text-surface-400 truncate">{user?.email}</p>
+                    </div>
+                    <button
+                      onClick={() => { setShowUserMenu(false); handleLogout(); }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-danger hover:bg-danger-light transition-all cursor-pointer"
+                    >
+                      <LogoutIcon />
+                      Sign Out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+            {/* Desktop: Date */}
+            <div className="hidden lg:flex items-center gap-4 ml-auto">
               <span className="text-sm text-surface-400">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </span>
@@ -119,9 +162,40 @@ export default function Layout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-8">
+        <main className="flex-1 p-4 lg:p-8 pb-24 lg:pb-8">
           <Outlet />
         </main>
+
+        {/* Mobile Bottom Navigation - iOS/Android style */}
+        <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-surface-200 lg:hidden safe-bottom">
+          <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
+            {navItems.map(item => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) => `
+                  flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl min-w-[60px]
+                  transition-all duration-200
+                  ${isActive
+                    ? 'text-primary-600'
+                    : 'text-surface-400'
+                  }
+                `}
+              >
+                {({ isActive }) => (
+                  <>
+                    <div className={`p-1.5 rounded-xl transition-all duration-200 ${isActive ? 'bg-primary-50' : ''}`}>
+                      <item.icon />
+                    </div>
+                    <span className={`text-[10px] font-medium ${isActive ? 'text-primary-600' : 'text-surface-400'}`}>
+                      {item.label}
+                    </span>
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
+        </nav>
       </div>
     </div>
   );

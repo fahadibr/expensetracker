@@ -3,6 +3,7 @@
   "appName": "ExpenseTrack",
   "webDir": "dist",
   "server": {
-    "androidScheme": "https"
+    "url": "https://expensetracker-z0d0.onrender.com",
+    "cleartext": false
   }
 }
